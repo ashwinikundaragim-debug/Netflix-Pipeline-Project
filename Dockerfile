@@ -1,9 +1,12 @@
-FROM openjdk:17.0.2-jdk-slim
-
+#Build  stage  - generate the war file
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DSkipTests
 
-COPY target/netflix-app-1.0.0.jar /app/netflix-app.jar
-
+#Runtime stage
+FROM tomcat:9.0-jdk17
+RUN rm -rf /usr/local/tomcat/webapps/*
+COPY --from=builder /app/target/NETFLIX-1.2.2.war /usr/local/tomcat/webapps/ROOT.war
 EXPOSE 8080 
-
-ENTRYPOINT ['java,'-jar','netfilx.jar'] 
+CMD ['catalina.sh','run'] 
